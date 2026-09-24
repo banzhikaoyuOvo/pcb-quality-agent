@@ -84,7 +84,10 @@ cd pcb-quality-agent
 cp fastapi-app/.env.example fastapi-app/.env
 # 编辑 fastapi-app/.env，填入 DEEPSEEK_API_KEY
 
-# 3. 一键启动（自动构建 + GPU 穿透）
+# 3. 一键启动（推荐）
+.\start.ps1
+
+# 或手动启动
 docker compose up -d
 
 # 4. 等 30 秒确认健康状态
@@ -356,7 +359,11 @@ services:
 # ⚠️ 必须在父目录执行（compose 文件位置）
 cd pcb-quality-agent
 
-# 启动 / 停止 / 重启
+# 一键启动/停止（Windows）
+.\start.ps1              # 启动（含健康检查 + 自动开浏览器）
+.\stop.ps1               # 停止
+
+# 或手动操作
 docker compose up -d
 docker compose stop
 docker compose restart
