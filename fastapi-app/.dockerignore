@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Secrets - NEVER leak into image
+.env
+
+# Runtime data (should be volume-mounted, not baked in)
+uploaded_images/
+milvus_data.db/
+
+# IDE & OS
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+
+# Archive (not needed in production image)
+archive/
+
+# Training artifacts (model is mounted via volume)
+runs/
+yolov8n.pt
+
+# 训练数据集（2.7GB，运行时不需要）
+data/datasets/
+data/**/snapshots/
+
+# 模型权重目录
+weights/
+
+# 测试缓存
+.pytest_cache/

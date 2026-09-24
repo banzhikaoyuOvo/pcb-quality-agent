@@ -1,0 +1,56 @@
+# PCB 缺陷检测企业 SOP (参考 IPC-A-610G 标准)
+# 结构化知识库，供 Standard Agent 进行确定性路由查询
+
+missing_hole:
+  defect_name: "Missing Hole (漏孔/未钻孔)"
+  ipc_reference: "IPC-A-610G Class 2 / Class 3"
+  description: "PCB 板上设计有通孔或过孔的位置，实际制造中未进行钻孔或钻孔遗漏。"
+  physical_electrical_cause: "钻头断裂、数控钻孔程序漏步、或层压后孔铜完全断裂导致电气开路。"
+  acceptance_criteria: "所有设计要求的孔必须存在且贯穿。对于非电气用途的机械安装孔，若不影响装配可接受（需工程特批）。"
+  reject_criteria: "任何影响电气连接或元器件插装的漏孔，一律拒收。"
+  rework_suggestion: "无法返工修复电气连接，通常作报废处理；纯机械孔可由工程评估后补钻。"
+
+mouse_bite:
+  defect_name: "Mouse Bite (老鼠咬/缺口)"
+  ipc_reference: "IPC-A-610G 6.2.2"
+  description: "印制板边缘或导线边缘出现半圆形的微小缺口，形似老鼠咬过的痕迹。"
+  physical_electrical_cause: "铣边或V-cut分板时刀具磨损、进给速度过快，或蚀刻过度导致铜箔边缘内缩。"
+  acceptance_criteria: "缺口深度不超过导线宽度的 20%，且未暴露内部基材或破坏相邻走线。"
+  reject_criteria: "缺口导致导线宽度减少超过 20%，或破坏了最小电气间隙（Spacing），或暴露玻璃纤维基材。"
+  rework_suggestion: "若仅轻微超标且不影响阻抗，可申请工程让步接收；否则报废。"
+
+open_circuit:
+  defect_name: "Open Circuit (开路/断路)"
+  ipc_reference: "IPC-A-610G 6.1.1"
+  description: "导电路径完全断裂，导致电流无法流通。"
+  physical_electrical_cause: "蚀刻过度、外力机械折断、热应力导致焊盘脱落，或电镀铜层断裂。"
+  acceptance_criteria: "不允许。所有设计为导通的路径必须保持连续。"
+  reject_criteria: "任何目视或飞针测试确认的开路缺陷，一律拒收。"
+  rework_suggestion: "对于非BGA区域的简单走线，可使用飞线（Jumper Wire）按 IPC-7711/21 标准进行返工修复；复杂内层开路直接报废。"
+
+short:
+  defect_name: "Short Circuit (短路/桥接)"
+  ipc_reference: "IPC-A-610G 6.1.2"
+  description: "两个本应电气隔离的导体（如相邻走线、焊盘）之间存在意外的导电连接。"
+  physical_electrical_cause: "蚀刻不净（残铜）、锡膏印刷桥连、波峰焊拉尖，或金属异物残留。"
+  acceptance_criteria: "不允许。任何违反最小电气间隙设计的导电桥接均为缺陷。"
+  reject_criteria: "相邻导体间存在金属连接，导致绝缘电阻下降或直接短路。"
+  rework_suggestion: "若是表面残铜或锡桥，可用手术刀剔除并用洗板水清洗；若是内层短路，直接报废。"
+
+spurious_copper:
+  defect_name: "Spurious Copper (残铜/多余铜)"
+  ipc_reference: "IPC-A-610G 6.1.3"
+  description: "在不应有铜箔的区域（如隔离带、焊盘间隙）残留了多余的铜箔。"
+  physical_electrical_cause: "干膜附着力不良导致蚀刻液渗入、曝光不良、或底片有脏污。"
+  acceptance_criteria: "残铜未改变最小电气间隙，且未形成孤立的悬浮铜皮（可能引起寄生电容或脱落风险）。"
+  reject_criteria: "残铜导致电气间隙小于设计最小值，或形成大面积可能脱落的孤立铜皮。"
+  rework_suggestion: "使用精密刻刀剔除多余铜箔，必要时涂抹阻焊绿油（Solder Mask）进行绝缘保护。"
+
+spur:
+  defect_name: "Spur (毛刺/铜刺)"
+  ipc_reference: "IPC-A-610G 6.2.1"
+  description: "导线或焊盘边缘向外突出的尖锐铜箔毛刺。"
+  physical_electrical_cause: "蚀刻过程中的侧蚀效应控制不当，或电镀时电流密度过大导致边缘镀层过厚。"
+  acceptance_criteria: "毛刺未突破最小电气间隙，且长度不超过导线宽度的 10%。"
+  reject_criteria: "毛刺过长导致电气间隙不足，或在高压环境下可能产生尖端放电（电晕效应）。"
+  rework_suggestion: "轻微毛刺可忽略；严重毛刺需人工修整或用化学微蚀去除。"

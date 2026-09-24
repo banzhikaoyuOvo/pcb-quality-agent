@@ -1,0 +1,44 @@
+# Web 框架
+fastapi==0.115.6
+uvicorn==0.34.0
+python-multipart==0.0.20
+
+# 数据模型
+pydantic==2.10.4
+pydantic-settings==2.7.0
+
+# Agent 编排
+langgraph==0.2.61
+langchain==0.3.14
+langchain-openai>=0.3.0
+
+# 向量数据库
+pymilvus>=3.0.0
+milvus-lite>=3.2.0
+
+# 存储与缓存
+psycopg2-binary==2.9.10
+redis==5.2.1
+
+# 视觉模型
+ultralytics==8.3.40
+modelscope==1.22.0
+Pillow==11.1.0
+numpy>=1.26.4
+opencv-python-headless>=4.9.0
+
+# ✅ R38-C：HTTP 客户端（Gradio 已移除，C1 方案不需要）
+requests>=2.31.0
+
+# ✅ LLM 调用
+openai>=1.0.0
+
+# 工具
+python-dotenv>=1.0.0
+
+# ✅ Rate Limiting（main.py 使用）
+slowapi>=0.1.9
+limits>=3.13.0
+
+# ✅ LangChain 核心（显式声明，避免隐式依赖）
+langchain-core>=0.3.29

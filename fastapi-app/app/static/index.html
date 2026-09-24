@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PCB 智能质检多 Agent 协同平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        html { scroll-behavior: smooth; }
+        
+        .spinner { 
+            border: 3px solid rgba(59, 130, 246, 0.1); 
+            width: 28px; height: 28px; 
+            border-radius: 50%; 
+            border-left-color: #3b82f6; 
+            animation: spin 0.8s linear infinite; 
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        .pipeline-item { 
+            animation: slideIn 0.3s ease-out forwards; 
+            opacity: 0; 
+            transform: translateX(-8px);
+        }
+        @keyframes slideIn { 
+            to { opacity: 1; transform: translateX(0); } 
+        }
+        
+        /* 打字机光标样式 */
+        .typing-cursor::after {
+            content: '▋';
+            animation: blink 1s step-end infinite;
+            color: #3b82f6;
+            margin-left: 2px;
+            font-weight: bold;
+        }
+        @keyframes blink { 50% { opacity: 0; } }
+        
+        /* Markdown 报告样式增强 */
+        .prose h1 { font-size: 1.5em; margin-top: 0; color: #1e40af; }
+        .prose h2 { font-size: 1.25em; margin-top: 1.2em; color: #1e3a8a; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.3em; }
+        .prose table { width: 100%; border-collapse: collapse; font-size: 0.875em; margin: 1em 0; }
+        .prose th, .prose td { border: 1px solid #d1d5db; padding: 0.5em 0.75em; text-align: left; }
+        .prose th { background: #f9fafb; font-weight: 600; }
+        .prose code { background: #f3f4f6; padding: 0.15em 0.4em; border-radius: 4px; font-size: 0.9em; color: #dc2626; }
+        .prose pre { background: #1f2937; color: #e5e7eb; padding: 1em; border-radius: 8px; overflow-x: auto; margin: 1em 0; }
+        .prose pre code { background: transparent; color: inherit; padding: 0; }
+        .prose p { margin-bottom: 0.8em; line-height: 1.7; }
+        
+        /* 报告容器淡入效果 */
+        .report-fade-in { animation: reportFade 0.3s ease-in; }
+        @keyframes reportFade { from { opacity: 0.5; } to { opacity: 1; } }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col items-center px-4 py-8 md:p-8">
+
+    <header class="text-center mb-8 max-w-4xl">
+        <div class="inline-flex items-center gap-3 mb-3">
+            <span class="text-4xl">🔬</span>
+            <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-blue-700 to-indigo-600 bg-clip-text text-transparent">
+                PCB 智能质检多 Agent 平台
+            </h1>
+        </div>
+        <p class="text-slate-500 text-sm md:text-base tracking-wide">
+            LangGraph 5-Agent 编排 · DeepSeek-V3 驱动 · SSE 实时流式反馈
+        </p>
+    </header>
+
+    <main class="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- 左侧面板 -->
+        <div class="lg:col-span-5 space-y-6">
+            <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                <h2 class="text-lg font-bold text-slate-700 mb-4 flex items-center gap-2">
+                    <span class="w-7 h-7 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-bold">1</span>
+                    上传 PCB 图像
+                </h2>
+                <label class="relative flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-slate-300 rounded-xl cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 transition-all group">
+                    <input type="file" id="fileInput" accept="image/*" class="hidden"/>
+                    <div id="uploadPlaceholder" class="text-center">
+                        <svg class="w-10 h-10 mx-auto text-slate-400 group-hover:text-blue-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        <p class="text-sm text-slate-500">点击或拖拽上传 PCB 图片</p>
+                        <p class="text-xs text-slate-400 mt-1">支持 JPG / PNG / BMP</p>
+                    </div>
+                    <img id="preview" src="" class="hidden absolute inset-0 w-full h-full object-contain rounded-xl bg-slate-100 p-2"/>
+                </label>
+                <button id="submitBtn" onclick="startInspection()" disabled
+                    class="mt-4 w-full bg-blue-600 text-white py-3 rounded-xl font-bold text-sm tracking-wide hover:bg-blue-700 active:scale-[0.98] transition-all disabled:bg-slate-300 disabled:cursor-not-allowed disabled:active:scale-100 flex items-center justify-center gap-2">
+                    <span id="btnText">🚀 开始智能质检</span>
+                    <div id="btnSpinner" class="spinner hidden" style="width:18px;height:18px;border-width:2px;"></div>
+                </button>
+            </section>
+
+            <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col">
+                <h2 class="text-lg font-bold text-slate-700 mb-4 flex items-center gap-2">
+                    <span class="w-7 h-7 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center text-sm font-bold">2</span>
+                    Agent 执行流水线
+                </h2>
+                <div id="pipeline" class="flex-1 min-h-[280px] max-h-[400px] overflow-y-auto space-y-2 pr-1 scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-transparent">
+                    <div id="pipelineEmpty" class="flex flex-col items-center justify-center h-full text-slate-400 gap-2">
+                        <svg class="w-8 h-8 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
+                        <span class="text-sm">等待任务启动...</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- 右侧面板：质检报告 -->
+        <div class="lg:col-span-7">
+            <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 h-full flex flex-col">
+                <h2 class="text-lg font-bold text-slate-700 mb-4 flex items-center gap-2">
+                    <span class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center text-sm font-bold">3</span>
+                    结构化质检报告
+                </h2>
+                <div id="reportContainer" class="flex-1 min-h-[500px] overflow-y-auto prose prose-slate prose-sm max-w-none p-5 rounded-xl bg-slate-50 border border-slate-100 relative">
+                    <div id="reportEmpty" class="flex flex-col items-center justify-center h-full text-slate-400 gap-3">
+                        <svg class="w-12 h-12 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        <span class="text-sm">报告将在质检完成后实时生成</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="mt-10 text-xs text-slate-400 text-center">
+        PCB Intelligent Inspection Multi-Agent Platform · Powered by LangGraph & DeepSeek
+    </footer>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const preview = document.getElementById('preview');
+        const uploadPlaceholder = document.getElementById('uploadPlaceholder');
+        const submitBtn = document.getElementById('submitBtn');
+        const btnText = document.getElementById('btnText');
+        const btnSpinner = document.getElementById('btnSpinner');
+        const pipeline = document.getElementById('pipeline');
+        const pipelineEmpty = document.getElementById('pipelineEmpty');
+        const reportContainer = document.getElementById('reportContainer');
+        const reportEmpty = document.getElementById('reportEmpty');
+
+        // 图片预览
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                preview.src = URL.createObjectURL(file);
+                preview.classList.remove('hidden');
+                uploadPlaceholder.classList.add('hidden');
+                submitBtn.disabled = false;
+            }
+        });
+
+        const nodeIcons = {
+            'decision': '🎯', 'visual': '👁️', 'db_store': '💾',
+            'standard': '📖', 'rootcause': '🧠', 'report': '📝'
+        };
+
+        function addPipelineItem(icon, message, type = 'info') {
+            pipelineEmpty?.classList.add('hidden');
+            const colors = {
+                info: 'border-slate-200 bg-slate-50 text-slate-600',
+                success: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+                error: 'border-red-200 bg-red-50 text-red-700',
+                active: 'border-blue-200 bg-blue-50 text-blue-700'
+            };
+            const div = document.createElement('div');
+            div.className = `pipeline-item flex items-start gap-3 px-3 py-2.5 rounded-lg border ${colors[type]} text-sm`;
+            div.innerHTML = `<span class="text-base leading-none mt-0.5 shrink-0">${icon}</span><span class="leading-snug">${message}</span>`;
+            pipeline.appendChild(div);
+            pipeline.scrollTo({ top: pipeline.scrollHeight, behavior: 'smooth' });
+        }
+
+        // ===== 核心：Markdown 流式渲染器 =====
+        class StreamMarkdownRenderer {
+            constructor(container) {
+                this.container = container;
+                this.rawText = '';
+                this.renderTimer = null;
+                this.isStreaming = true;
+                
+                // 初始化纯文本打字机容器
+                this.typingDiv = document.createElement('div');
+                this.typingDiv.className = 'typing-cursor whitespace-pre-wrap font-mono text-sm text-slate-700';
+                this.container.innerHTML = '';
+                this.container.appendChild(this.typingDiv);
+            }
+
+            appendToken(token) {
+                if (!this.isStreaming || !token) return;
+                this.rawText += token;
+                
+                // 实时更新纯文本视图（保证流畅无闪烁）
+                this.typingDiv.textContent = this.rawText;
+                this.container.scrollTo({ top: this.container.scrollHeight, behavior: 'smooth' });
+
+                // 智能防抖：尝试在后台解析 Markdown
+                clearTimeout(this.renderTimer);
+                this.renderTimer = setTimeout(() => this.tryRenderMarkdown(), 100);
+            }
+
+            tryRenderMarkdown() {
+                // 仅在内容足够长且不在代码块中间时才尝试渲染
+                const lastCodeBlock = this.rawText.lastIndexOf('```');
+                const isCodeBlockOpen = lastCodeBlock !== -1 && 
+                    (this.rawText.substring(lastCodeBlock).match(/```/g) || []).length % 2 !== 0;
+                
+                if (isCodeBlockOpen || this.rawText.length < 50) return;
+
+                // 临时隐藏光标，渲染 Markdown
+                this.typingDiv.classList.remove('typing-cursor');
+                try {
+                    const html = marked.parse(this.rawText);
+                    this.typingDiv.innerHTML = html;
+                    this.typingDiv.classList.remove('font-mono', 'whitespace-pre-wrap');
+                    this.typingDiv.classList.add('report-fade-in');
+                } catch (e) {
+                    // 解析失败则回退到纯文本
+                    this.typingDiv.textContent = this.rawText;
+                }
+                // 重新加上光标
+                this.typingDiv.classList.add('typing-cursor');
+                this.container.scrollTo({ top: this.container.scrollHeight, behavior: 'smooth' });
+            }
+
+            finalize(finalReport) {
+                this.isStreaming = false;
+                clearTimeout(this.renderTimer);
+                const content = finalReport || this.rawText || "未生成报告";
+                this.container.innerHTML = marked.parse(content);
+                this.container.scrollTo({ top: this.container.scrollHeight, behavior: 'smooth' });
+            }
+        }
+
+        let renderer = null;
+
+        async function startInspection() {
+            const file = fileInput.files[0];
+            if (!file) return alert("请先选择图片");
+
+            submitBtn.disabled = true;
+            btnText.textContent = "质检进行中...";
+            btnSpinner.classList.remove('hidden');
+            pipeline.innerHTML = '';
+            pipelineEmpty?.remove();
+            
+            // 初始化流式渲染器
+            renderer = new StreamMarkdownRenderer(reportContainer);
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            try {
+                const response = await fetch("/inspect_stream", { method: "POST", body: formData });
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let buffer = "";
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split("\n\n");
+                    buffer = lines.pop();
+
+                    for (const line of lines) {
+                        if (!line.startsWith("data: ")) continue;
+                        try {
+                            const data = JSON.parse(line.substring(6));
+                            handleEvent(data);
+                        } catch (e) { console.error("SSE parse error:", e); }
+                    }
+                }
+            } catch (err) {
+                addPipelineItem('❌', `连接断开: ${err.message}`, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                btnText.textContent = "🚀 开始智能质检";
+                btnSpinner.classList.add('hidden');
+            }
+        }
+
+        function handleEvent(data) {
+            switch (data.event) {
+                case 'start':
+                    addPipelineItem('🚀', data.message, 'active');
+                    break;
+                case 'node_start':
+                    const icon = nodeIcons[data.node] || '⚙️';
+                    addPipelineItem(icon, data.message, 'active');
+                    break;
+                case 'llm_token':
+                    if (renderer && data.content) {
+                        renderer.appendToken(data.content);
+                    }
+                    break;
+                case 'complete':
+                    addPipelineItem('✅', '流水线执行完毕！', 'success');
+                    if (renderer) {
+                        renderer.finalize(data.state?.final_report);
+                    }
+                    break;
+                case 'error':
+                    addPipelineItem('❌', data.message, 'error');
+                    break;
+                default:
+                    addPipelineItem('ℹ️', data.message, 'info');
+            }
+        }
+    </script>
+</body>
+</html>

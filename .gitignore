@@ -1,0 +1,94 @@
+# ==========================================
+# Python 缓存
+# ==========================================
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+dist/
+build/
+
+# ==========================================
+# 环境与密钥（绝不进仓库）
+# ==========================================
+.env
+.env.local
+.venv/
+venv/
+
+# ==========================================
+# 数据集（907 MB，不进仓库）
+# ==========================================
+fastapi-app/data/datasets/
+data/datasets/
+
+# ==========================================
+# 训练产物（排除，仅保留 best.pt）
+# ==========================================
+# 逐层解锁到 best.pt
+fastapi-app/runs/*
+!fastapi-app/runs/detect/
+fastapi-app/runs/detect/*
+!fastapi-app/runs/detect/runs/
+fastapi-app/runs/detect/runs/*
+!fastapi-app/runs/detect/runs/pcb_detect/
+fastapi-app/runs/detect/runs/pcb_detect/*
+!fastapi-app/runs/detect/runs/pcb_detect/train_v1/
+fastapi-app/runs/detect/runs/pcb_detect/train_v1/*
+!fastapi-app/runs/detect/runs/pcb_detect/train_v1/weights/
+fastapi-app/runs/detect/runs/pcb_detect/train_v1/weights/*
+!fastapi-app/runs/detect/runs/pcb_detect/train_v1/weights/best.pt
+
+# ==========================================
+# 预训练权重（可自动下载）
+# ==========================================
+# 根目录的 yolov8n.pt 排除（可自动下载）
+/yolov8n.pt
+fastapi-app/yolov8n.pt
+
+# 所有 .pt 文件排除，但 best.pt 例外
+*.pt
+!fastapi-app/runs/detect/runs/pcb_detect/train_v1/weights/best.pt
+
+# ==========================================
+# 运行时数据
+# ==========================================
+fastapi-app/uploaded_images/
+fastapi-app/milvus_data.db/
+uploaded_images/
+milvus_data.db/
+
+# ==========================================
+# 归档
+# ==========================================
+fastapi-app/archive/
+archive/
+
+# ==========================================
+# IDE & OS
+# ==========================================
+.vscode/
+.idea/
+*.swp
+Thumbs.db
+desktop.ini
+
+# ==========================================
+# 日志
+# ==========================================
+*.log
+logs/
+
+# ==========================================
+# Docker 数据卷
+# ==========================================
+volumes/
+embedEtcd.yaml
+user.yaml
+
+# ==========================================
+# Milvus 缓存
+# ==========================================
+fastapi-app/data/bm25_cache/

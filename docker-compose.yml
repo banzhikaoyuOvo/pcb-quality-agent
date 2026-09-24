@@ -1,0 +1,37 @@
+﻿
+name: smart-agent
+
+services:
+  api:
+    build:
+      context: ./fastapi-app
+      dockerfile: Dockerfile
+    container_name: pcb_api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./fastapi-app/.env
+    environment:
+      - MODEL_PATH=/app/models/best.pt
+    volumes:
+      # 模型权重（只读挂载）
+      - ./fastapi-app/runs/detect/runs/pcb_detect/train_v1/weights/best.pt:/app/models/best.pt:ro
+      # 运行时数据
+      - ./fastapi-app/uploaded_images:/app/uploaded_images
+      - ./fastapi-app/milvus_data.db:/app/milvus_data.db
+      # ✅ 新增：挂载代码目录，改完代码只需 restart 不用 rebuild
+      - ./fastapi-app/app:/app/app
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 60s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]

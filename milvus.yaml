@@ -1,0 +1,24 @@
+# D:\smart-agent\milvus.yaml
+
+# 1. 使用 rocksmq 但放宽所有超时（WSL2 兼容）
+rocksmq:
+  retentionTimeInMinutes: 60
+  retentionSizeInMB: 8192
+  lrucacheratio: 0.0
+
+# 2. 大幅放宽 etcd 超时参数（核心修复）
+etcd:
+  requestTimeout: 30000        # 30秒（默认5秒）
+  dialTimeout: 30000           # 30秒（默认5秒）
+  logLevel: "warn"
+
+# 3. 放宽 gRPC 超时
+grpc:
+  serverMaxRecvMsgSize: 268435456
+  serverMaxSendMsgSize: 268435456
+  clientMaxRecvMsgSize: 268435456
+  clientMaxSendMsgSize: 268435456
+
+# 4. 降低资源检查阈值（避免 WSL2 内存检测误判）
+quotaAndLimits:
+  enable: false
