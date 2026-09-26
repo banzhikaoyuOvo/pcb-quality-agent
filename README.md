@@ -424,7 +424,9 @@ pytest tests/ -v
 - `test_knowledge_base.py`：单例模式、YAML 加载、已知/未知缺陷
 - `test_root_cause_agent.py`：early return 分支 + LLM 真实调用
 
+## 📖 相关文档
 
+- [架构文档](fastapi-app/docs/architecture.md)：5-Agent 编排、关键设计决策、踩坑记录
 
 ## 📄 License
 
