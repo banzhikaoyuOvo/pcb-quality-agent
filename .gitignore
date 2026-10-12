@@ -92,3 +92,11 @@ user.yaml
 # Milvus 缂撳瓨
 # ==========================================
 fastapi-app/data/bm25_cache/
+# ===== 备份文件（本地保留，不进仓库） =====
+*.bak
+*.tmp
+*.old
+
+# ===== 项目 dump 工具产物 =====
+project_dump.md
+dump_project.py
