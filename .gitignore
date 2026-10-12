@@ -97,6 +97,6 @@ fastapi-app/data/bm25_cache/
 *.tmp
 *.old
 
-# ===== ��Ŀ dump ���߲��� =====
+# ===== 项目 dump 工具产物 =====
 project_dump.md
-��Ŀ����.md
+项目快照.md
